@@ -1,0 +1,86 @@
+{
+	{$CADDY_GLOBAL_OPTIONS}
+	http_port 8080
+	auto_https off
+
+	frankenphp {
+		#worker ./public/index.php
+
+		{$FRANKENPHP_CONFIG}
+	}
+
+	servers :8080 {
+		protocols h1 h2c
+	}
+
+	order php_server before file_server
+	order php before file_server
+}
+
+{$CADDY_EXTRA_CONFIG}
+
+(cors) {
+	@cors_preflight{args[0]} method OPTIONS
+	@cors{args[0]} header Origin {args[0]}
+
+	handle @cors_preflight{args[0]} {
+		header {
+			Access-Control-Allow-Origin "{args[0]}"
+			Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+			Access-Control-Allow-Headers *
+			Access-Control-Max-Age "3600"
+			defer
+		}
+		respond "" 204
+	}
+
+	handle @cors{args[0]} {
+		header {
+			Access-Control-Allow-Origin "{args[0]}"
+			Access-Control-Expose-Headers *
+			defer
+		}
+	}
+}
+
+:8080 {
+	import cors *
+
+	log {
+        output stdout
+        format json
+    }
+
+	route {
+		root * public/
+
+		@canonicalPath {
+			file {path}/index.php
+			not path */
+		}
+
+		redir @canonicalPath {path}/ 308
+
+		# If the requested file does not exist, try index files
+		@indexFiles file {
+			try_files {path} {path}/index.php index.php
+			split_path .php
+		}
+		rewrite @indexFiles {http.matchers.file.relative}
+
+		# FrankenPHP!
+		@phpFiles path *.php
+		php @phpFiles
+
+		#encode zstd gzip
+		file_server
+	}
+
+	root * public/
+	encode zstd gzip
+	{$CADDY_SERVER_EXTRA_DIRECTIVES}
+
+	header X-Forwarded-Proto https
+
+	php_server
+}

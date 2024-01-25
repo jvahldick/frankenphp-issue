@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  workspace:
+    build:
+      context: .
+      dockerfile: ./build/docker/workspace/Dockerfile
+    command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+    environment:
+      APP_RUNTIME: 'Runtime\FrankenPhpSymfony\Runtime'
+      CADDY_GLOBAL_OPTIONS: debug
+    volumes:
+      - ./app:/app
+
+  k6:
+    image: grafana/k6
+    volumes:
+      - ./conf:/app
+    command: ["run", "/app/script_workspace.js"]
+    working_dir: /app

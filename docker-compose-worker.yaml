@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  workspace:
+    extends:
+      file: docker-compose.yaml
+      service: workspace
+    environment:
+      CADDY_GLOBAL_OPTIONS: debug
+      APP_RUNTIME: 'Runtime\FrankenPhpSymfony\Runtime'
+      FRANKENPHP_CONFIG: "worker ./public/index.php"
+    command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
