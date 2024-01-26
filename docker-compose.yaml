@@ -12,9 +12,27 @@ services:
     volumes:
       - ./app:/app
 
+  workspace_bookworm:
+    build:
+      context: .
+      dockerfile: ./build/docker/workspace/bookworm.Dockerfile
+    command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+    environment:
+      APP_RUNTIME: 'Runtime\FrankenPhpSymfony\Runtime'
+      CADDY_GLOBAL_OPTIONS: debug
+    volumes:
+      - ./app:/app
+
   k6:
     image: grafana/k6
     volumes:
       - ./conf:/app
     command: ["run", "/app/script_workspace.js"]
+    working_dir: /app
+
+  k6_bookworm:
+    image: grafana/k6
+    volumes:
+      - ./conf:/app
+    command: ["run", "/app/script_workspace_bookworm.js"]
     working_dir: /app

@@ -10,3 +10,13 @@ services:
       APP_RUNTIME: 'Runtime\FrankenPhpSymfony\Runtime'
       FRANKENPHP_CONFIG: "worker ./public/index.php"
     command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]
+
+  workspace_bookworm:
+    extends:
+      file: docker-compose.yaml
+      service: workspace_bookworm
+    environment:
+      CADDY_GLOBAL_OPTIONS: debug
+      APP_RUNTIME: 'Runtime\FrankenPhpSymfony\Runtime'
+      FRANKENPHP_CONFIG: "worker ./public/index.php"
+    command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

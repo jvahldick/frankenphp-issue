@@ -7,7 +7,7 @@ export const options = {
 };
 
 export default function () {
-    const url = `http://workspace:8080/`;
+    const url = `http://workspace_bookworm:8080/`;
 
     http.get(url, options);
     sleep(1);
